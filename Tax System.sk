@@ -1,0 +1,58 @@
+# Note: This DOESN'T include the Government Money GUI. This will have to be made by you, or you can DM me on Discord. _Ethan#7747
+
+command /taxeditor [<text>]:
+    trigger:
+        if arg-1 isn't set:
+            send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 No town name set!"
+            stop
+        else:
+            if {owns.%arg-1%.%player's uuid%} is true:
+                open virtual chest with size 4 named "&6Tax&a Editor" to player
+                format gui slot 0 of player with gold ingot named "&640 Dollar Tax" to run:
+                    set {taxAmount.%arg-1%} to 40
+                    send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Tax Amount set to &a&o$40&r&7!"
+                format gui slot 4 of player with gold ingot named "&645 Dollar Tax" lored "&aDefault Amount" to run:
+                    set {taxAmount.%arg-1%} to 45
+                    send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Tax Amount set to &a&o$45&r&7!"
+                format gui slot 8 of player with gold ingot named "&660 Dollar Tax" to run:
+                    set {taxAmount.%arg-1%} to 60
+                    send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Tax Amount set to &a&o$60&r&7!"
+                format gui slot 9 of player with gold ingot named "&75 Dollar Tax" to run:
+                    set {taxAmount.%arg-1%} to 75
+                    send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Tax Amount set to &a&o$75&r&7!"
+            else:
+                send "&cYou don't own the town %arg-1%&c!"
+
+every 30 minutes in "world":
+    set {taxTime} to true
+    broadcast "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Tax Time!"
+    loop all players:
+        wait 1 second
+        if {ownsTown.%loop-player's uuid%} is true:
+            send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Members of your town, %{homeTown.%loop-player's uuid%}%&7 will be requested to pay taxes." to loop-player
+            stop
+        else:
+            if {homeTown.%loop-player's uuid%} is "Spawn":
+                send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Your home is Spawn, so you're protected from taxes." to loop-player
+                stop
+            else if {homeTown.%loop-player's uuid%} isn't "Spawn":
+                send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Pay your taxes (/paytaxes), or $250 will be taken from your balance! 10 minutes to pay! /mytaxes for more information." to loop-player
+                set {taxStatus.%loop-player's uuid%} to "Needing to be paid"
+                wait 10 minutes
+                loop all players:
+                    if {taxStatus.%loop-player-2's uuid%} is "Needing to be paid":
+                        send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 You didn't pay taxes in time!" to loop-player-2
+                        remove 250 from {balance.%loop-player-2's uuid%}
+                        add 25 to {govMoney.%{homeTown.%loop-player-2's uuid%}%}
+
+command /paytaxes [<text>]:
+    trigger:
+        if {taxTime} is true:
+            if {homeTown.%player's uuid%} isn't "Spawn":
+                if {taxStatus.%player's uuid%} is "Needing to be paid":
+                    if {homeTown.%player's uuid%} is arg-1:
+                        remove {taxAmount.%{homeTown.%player's uuid%}%} from {balance.%player's uuid%}
+                        send "&7[&aTownCRTR &oTaxes&r&7] &8>>>&7 Paid taxes!"
+                        set {taxStatus.%player's uuid%} to "Paid"
+                        set {_amount} to {taxAmount.%arg-1%}
+                        add {_amount} to {govMoney.%arg-1%}
