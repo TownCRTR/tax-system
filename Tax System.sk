@@ -45,7 +45,8 @@ every 30 minutes in "world":
                         remove 250 from {balance.%loop-player-2's uuid%}
                         add 25 to {govMoney.%{homeTown.%loop-player-2's uuid%}%}
 
-command /paytaxes [<text>]:
+command /paytaxes <text>:
+    usage: &a[TownCRTR] &3/paytaxes (your hometown)
     trigger:
         if {taxTime} is true:
             if {homeTown.%player's uuid%} isn't "Spawn":
@@ -56,3 +57,5 @@ command /paytaxes [<text>]:
                         set {taxStatus.%player's uuid%} to "Paid"
                         set {_amount} to {taxAmount.%arg-1%}
                         add {_amount} to {govMoney.%arg-1%}
+            else:
+                send "&a[TownCRTR] &3You live at spawn, no need to pay taxes!"
